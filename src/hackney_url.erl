@@ -303,13 +303,13 @@ urlencode(Bin) ->
 
 %% @doc URL encode a string binary.
 %% The `noplus' option disables the default behaviour of quoting space
-%% characters, `\s', as `+'. The `upper' option overrides the default behaviour
-%% of writing hex numbers using lowecase letters to using uppercase letters
+%% characters, `+', as `\s'. The `upper' option disables the default behaviour
+%% of writing hex numbers using uppercase letters to using lowercase letters
 %% instead.
 -spec urlencode(binary() | string(), [qs_opt()]) -> binary().
 urlencode(Bin, Opts) ->
-  Plus = not proplists:get_value(noplus, Opts, false),
-  Upper = proplists:get_value(upper, Opts, false),
+  Plus = not proplists:get_value(noplus, Opts, true),
+  Upper = proplists:get_value(upper, Opts, true),
   urlencode(hackney_bstr:to_binary(Bin), <<>>, Plus, Upper).
 
 -spec urlencode(binary(), binary(), boolean(), boolean()) -> binary().
@@ -317,9 +317,7 @@ urlencode(<<C, Rest/binary>>, Acc, P=Plus, U=Upper) ->
   if	C >= $0, C =< $9 -> urlencode(Rest, <<Acc/binary, C>>, P, U);
     C >= $A, C =< $Z -> urlencode(Rest, <<Acc/binary, C>>, P, U);
     C >= $a, C =< $z -> urlencode(Rest, <<Acc/binary, C>>, P, U);
-    C =:= $.; C =:= $-; C =:= $~; C =:= $_; C =:= $*; C =:= $@ ->
-      urlencode(Rest, <<Acc/binary, C>>, P, U);
-    C =:= $(; C =:= $); C =:= $!, C =:= $$ ->
+    C =:= $.; C =:= $-; C =:= $_; C =:= $* ->
       urlencode(Rest, <<Acc/binary, C>>, P, U);
     C =:= $ , Plus ->
       urlencode(Rest, <<Acc/binary, $+>>, P, U);
